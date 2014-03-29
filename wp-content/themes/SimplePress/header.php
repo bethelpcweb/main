@@ -27,9 +27,7 @@
 </head>
 <body <?php body_class(); ?>>
 <div class="wrapper">
-  <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php $logo = (get_option('simplepress_logo') <> '') ? get_option('simplepress_logo') : get_template_directory_uri().'/images/logo.png'; ?>
-    <img src="<?php echo esc_attr( $logo ); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" id="logo"/></a>
-
+  <a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php $logo = (get_option('simplepress_logo') <> '') ? get_option('simplepress_logo') : get_template_directory_uri().'/images/logo.png'; ?><img src="<?php echo esc_attr( $logo ); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" id="logo"/></a>
     <div id="navwrap">
         <span class="nav_top"></span>
         <?php $menuClass = 'nav superfish';

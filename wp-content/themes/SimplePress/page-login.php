@@ -24,8 +24,6 @@ Template Name: Login Page
                     $titletext = get_the_title();
                     $thumbnail = get_thumbnail($width,$height,$classtext,$titletext,$titletext);
                     $thumb = $thumbnail["thumb"]; ?>
-                    <h1 class="title"><?php the_title(); ?></h1>
-                    <br class="clear" />
                     <div class="post<?php if($fullwidth) echo(' post_full');?>">
                         <?php if ($thumb <> '' && get_option('simplepress_page_thumbnails') == 'on') { ?>
                         <div class="thumb">
@@ -48,6 +46,7 @@ Template Name: Login Page
                                         <form action='<?php echo esc_url( home_url( '', $scheme ) ); ?>/wp-login.php' method='post'>
                                             <p><label><span><?php esc_html_e('Username','SimplePress'); ?>: </span><input type='text' name='log' id='log' value='<?php echo esc_attr($user_login); ?>' size='20' /><span class='et_protected_icon'></span></label></p>
                                             <p><label><span><?php esc_html_e('Password','SimplePress'); ?>: </span><input type='password' name='pwd' id='pwd' size='20' /><span class='et_protected_icon et_protected_password'></span></label></p>
+                                            <p id="nav"><a href="http://www.bethelpreschurch.org/wp-login.php?action=register">Register</a> | <a title="Password Lost and Found" href="http://www.bethelpreschurch.org/wp-login.php?action=lostpassword">Lost your password?</a></p>
                                             <input type='submit' name='submit' value='Login' class='etlogin-button' />
                                         </form>
                                     </div> <!-- .et-protected-form -->

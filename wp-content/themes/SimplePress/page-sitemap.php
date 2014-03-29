@@ -24,7 +24,6 @@ $fullwidth = isset( $et_ptemplate_settings['et_fullwidthpage'] ) ? (bool) $et_pt
                     $titletext = get_the_title();
                     $thumbnail = get_thumbnail($width,$height,$classtext,$titletext,$titletext);
                     $thumb = $thumbnail["thumb"]; ?>
-                    <h1 class="title"><?php the_title(); ?></h1>
                     <br class="clear" />
                     <div class="post<?php if($fullwidth) echo(' post_full');?>">
                         <?php if ($thumb <> '' && get_option('simplepress_page_thumbnails') == 'on') { ?>
@@ -45,13 +44,13 @@ $fullwidth = isset( $et_ptemplate_settings['et_fullwidthpage'] ) ? (bool) $et_pt
 									<h2><?php esc_html_e('Pages','SimplePress'); ?></h2>
 									<ul id="sitemap-pages"><?php wp_list_pages('title_li='); ?></ul>
 								</div> <!-- end .sitemap-col -->
-
+<!-- Removed Categories
 								<div class="sitemap-col">
 									<h2><?php esc_html_e('Categories','SimplePress'); ?></h2>
 									<ul id="sitemap-categories"><?php wp_list_categories('title_li='); ?></ul>
-								</div> <!-- end .sitemap-col -->
+								</div> --> <!-- end .sitemap-col -->
 
-								<div class="sitemap-col">
+<!-- Removed Tags								<div class="sitemap-col">
 									<h2><?php esc_html_e('Tags','SimplePress'); ?></h2>
 									<ul id="sitemap-tags">
 										<?php $tags = get_tags();
@@ -61,13 +60,13 @@ $fullwidth = isset( $et_ptemplate_settings['et_fullwidthpage'] ) ? (bool) $et_pt
 											}
 										} ?>
 									</ul>
-								</div> <!-- end .sitemap-col -->
+								</div> --><!-- end .sitemap-col -->
 
-								<div class="sitemap-col<?php echo ' last'; ?>">
+<!-- Removed Authors								<div class="sitemap-col<?php echo ' last'; ?>">
 									<h2><?php esc_html_e('Authors','SimplePress'); ?></h2>
 									<ul id="sitemap-authors" ><?php wp_list_authors('show_fullname=1&optioncount=1&exclude_admin=0'); ?></ul>
-								</div> <!-- end .sitemap-col -->
-							</div> <!-- end #sitemap -->
+								</div> --> <!-- end .sitemap-col -->
+							</div>  <!-- end #sitemap -->
 
 							<div class="clear"></div>
 
