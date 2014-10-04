@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<markers>
+  <marker>
+    <marker_id>11</marker_id>
+    <map_id>1</map_id>
+    <title></title>
+    <address>1 eagle way broomfield co</address>
+    <desc></desc>
+    <pic></pic>
+    <icon></icon>
+    <linkd></linkd>
+    <lat>39.9297148</lat>
+    <lng>-105.0748944</lng>
+    <anim>0</anim>
+    <category></category>
+    <infoopen>0</infoopen>
+  </marker>
+</markers>

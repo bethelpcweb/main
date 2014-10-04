@@ -214,10 +214,11 @@ class BulkImportADIntegrationPlugin extends ADIntegrationPlugin {
 		}
 		
 		// Adding all local users with non empty entry adi_samaccountname in usermeta
+		// Issue #0076
 		$blogusers=$wpdb->get_results( 
 			'
 			SELECT
-				users.user_login
+				users.user_login, meta.meta_value 
 			FROM
 				'. $wpdb->users . ' users
 			INNER JOIN
@@ -234,7 +235,7 @@ class BulkImportADIntegrationPlugin extends ADIntegrationPlugin {
 		);
 		if (is_array($blogusers)) {
 			foreach ($blogusers AS $user) {
-				$all_users[strtolower($user->user_login)] = $user->user_login;
+				$all_users[strtolower($user->meta_value)] = $user->user_login; // Issue #0076
 			}
 		}	
 		
@@ -252,11 +253,11 @@ class BulkImportADIntegrationPlugin extends ADIntegrationPlugin {
 		$updated_users = 0;
 		foreach ($all_users AS $username) {
 			
-			$ad_username = $username;
+			$ad_username = $username; // Issue #0077
 			
 			// getting user data
-			//$user = get_userdatabylogin($username); // deprecated
 			$user = get_user_by('login', $username);
+			//$ad_username = get_user_meta($user->ID, 'adi_samaccountname', true); // Issue #0077
 			
 			// role
 			$user_role = $this->_get_user_role_equiv($ad_username); // important: use $ad_username not $username

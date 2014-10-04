@@ -1,9 +1,9 @@
-=== Active Directory Integration ===
+﻿=== Active Directory Integration ===
 Contributors: glatze
 Tags: authentication, active directory, ldap, authorization, security, windows
 Requires at least: 3.0
-Tested up to: 3.5.1
-Stable tag: 1.1.4
+Tested up to: 4.0
+Stable tag: 1.1.5
 
 Allows WordPress to authenticate, authorize, create and update users against Active Directory
 
@@ -35,8 +35,9 @@ It is very easy to set up. Just activate the plugin, type in a domain controller
 * Support for multiple account suffixes.
 * Using LDAP_OPT_NETWORK_TIMEOUT (default 5 seconds) to fall back to local authorization when your Active Directory Server is unreachable.
 * Bulk SyncBack to manually write all "Additional User Attributes" back to Active Directory.
-* **NEW** Disable user accounts in WordPress if they are disabled in Active Directory. 
-* **NEW** Option to disable fallback to local (WordPress) authentication.
+* Disable user accounts in WordPress if they are disabled in Active Directory. 
+* Option to disable fallback to local (WordPress) authentication.
+* **NEW** Support for large groups (>1000 user) in Bulk Import with PHP 5.4.0 and above.
 
 The latest major release 1.1 was sponsored by [VARA](http://vara.nl). Many thanks to Bas Ruijters.
 
@@ -94,9 +95,13 @@ Not all attribute types from the Active Directory schema are supported and there
 * octet: **Octet String**s like  "jpegPhoto"
 * time: **UTC Coded Time** like "whenCreated"
 * timestamp: **Integer**s which store timestamps (not the unix ones) like "lastLogon"
+* cn: **Common Name** extracts the CN part and drops everthing else - use it with "manager"
 
 = Why will no users be imported if I'm using "Domain Users" as security group for Bulk Import? =
 Here we have a special problem with the builtin security group "Domain Users". In detail: the security group "Domain Users" is usually the primary group of all users. In this case the members of this security group are not listed in the members attribute of the group. To import all users of the security group "Domain Users" you must set the option "Import members of security groups" to "**Domain Users;id:513**". The part "id:513" means "Import all users whos primaryGroupID is 513." And as you might have guessed, 513 is the ID of the security group "Domain Users".
+
+= I have problems with accounts that have special characters in the username. What can I do? =
+It is never a good idea to allow special characters in usernames! For ADI it won't be a problem, but in Wordpress only lowercase letters (a-z) and numbers are allowed. The only option is to change the usernames in AD. Hey! Stop! Don't shoot the messenger.   
 
 = I'm interested in the further development of ADI. How to keep up to date? =
 * Follow the development on [Twitter](http://twitter.com/#!/adintegration).
@@ -127,8 +132,19 @@ Here we have a special problem with the builtin security group "Domain Users". I
 
 == Changelog ==
 
+= 1.1.5 =
+* ADD: LDAP paging support for Bulk Import on PHP 5.4.0 so more than 1000 users per group can be imported. (Issue #0058. Thanks to billrod for the bug report.)
+* ADD: Added new attribute type "cn" for user meta. (Issue #0080. Feature Request by Réda Sehili.)
+* UPD: Language Norwegian (nb_NO) updated. (Many thanks to Audun Wangen.)
+* FIX: Replaced deprecated $wpdb->escape() by $wpdb->prepare(). (Documented in issue #0078. Thanks to marshalld for the bug report.)
+* FIX: User Meta not loaded if "Append account suffix to new created usernames." is checked. (Issue #0081. Thanks to Réda Sehili for the bug report and the solution.)
+* Fix: Added network_timeout setting to wpmu settings.
+* Fix: Bulk Import didn't work correctly if account suffix is appended to username. (Issue #0076. Thanks to Stephen Rice for the bug report.)
+* Change: Moved class BulkSyncBackADIntegrationPlugin() from syncback.php to BulkSyncBackADIntegrationPlugin.class.php (Recommendation by nic0tin. Issue #0075.)
+ 
+
 = 1.1.4 =
-* ADD: Option to (re-)enable lost password recovery. (Feature Request by Jonathan Shapiro. Issue #00074.)
+* ADD: Option to (re-)enable lost password recovery. (Feature Request by Jonathan Shapiro. Issue #0074.)
 * CHANGE: Only set role of user if the role already exists in WordPress. (Issue #0051)
 * CHANGE: Now using POST instead of GET in Test Tool, so user and password are not shown in server log files (Change Request by Aren Cambre. Issue #0054.)
 * CHANGE: The roles in Role Equivalent Groups are now always stored in lower case. (Issue #0055)

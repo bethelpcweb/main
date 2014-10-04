@@ -508,13 +508,13 @@ if (!IS_WPMU) { ?>
 								<?php _e('Enter additional AD attributes (one per line), followed by their type and the associated meta key seperated by a colon (:).', 'ad-integration'); ?>
 								<?php _e('Additional Attributes that should appear on the user profile must also be placed in "Attributes to show".', 'ad-integration'); ?>
 								<br/>
-								<?php _e('Format: <i>&lt;attribute_name&gt;:&lt;type&gt;:&lt;meta key&gt;</i> where <i>&lt;type&gt;</i> can be one of the following: <i>string, list, integer, bool, octet, time, timestamp</i>.', 'ad-integration'); ?>
+								<?php _e('Format: <i>&lt;attribute_name&gt;:&lt;type&gt;:&lt;meta key&gt;</i> where <i>&lt;type&gt;</i> can be one of the following: <i>string, list, integer, bool, octet, time, timestamp, cn</i>.', 'ad-integration'); ?>
 								<br/>
 								<?php _e('If no <i>&lt;meta key&gt;</i> is given the AD attributes will be stored as <i>adi_&lt;attribute_name&gt;</i>.', 'ad-integration'); ?>
 								<br/>
 								<?php _e('Example:', 'ad-integration'); ?>
 								<br/>
-								<pre class="AD-example"><?php _e("lastlogon:timestamp:last_logon_time\nwhencreated:time:user_created_on\nhomephone:string\notherhomephone:list", 'ad_integration'); ?></pre>
+								<pre class="AD-example"><?php _e("lastlogon:timestamp:last_logon_time\nwhencreated:time:user_created_on\nhomephone:string\notherhomephone:list\nmanager:cn", 'ad_integration'); ?></pre>
 								<br/>
 								<textarea name="AD_Integration_additional_user_attributes" id="AD_Integration_additional_user_attributes"><?php echo $this->_additional_user_attributes; ?></textarea>
 								<button id="showCommonAttributes"><?php _e('Show Common Attributes','ad-integration'); ?></button>
@@ -551,7 +551,7 @@ if (!IS_WPMU) { ?>
 								<br/>
 								<?php _e('Example:', 'ad-integration'); ?>
 								<br/>
-								<pre class="AD-example"><?php _e("lastlogon\nwhencreated:User Created on\n&lt;h4&gt;A headline&lt;/h4&gt;\nhomephone:Phone (home):*\notherhomephone::*", 'ad_integration'); ?></pre>
+								<pre class="AD-example"><?php _e("lastlogon\nwhencreated:User Created on\n&lt;h4&gt;A headline&lt;/h4&gt;\nhomephone:Phone (home):*\notherhomephone::*\nmanager:Manager", 'ad_integration'); ?></pre>
 								<br/>
 								<textarea name="AD_Integration_attributes_to_show" id="AD_Integration_attributes_to_show"><?php echo $this->_attributes_to_show; ?></textarea>
 							</td>

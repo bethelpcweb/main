@@ -2,7 +2,7 @@
 
 /*
 Plugin Name: Active Directory Integration 
-Version: 1.1.4
+Version: 1.1.5
 Plugin URI: http://www.steindorff.de/wp-ad-integration
 Description: Allows WordPress to authenticate, authorize, create and update users through Active Directory
 Author: Christoph Steindorff
@@ -48,7 +48,7 @@ class ADIntegrationPlugin {
 	
 	// version of needed DB table structure
 	const DB_VERSION = '0.9';
-	const ADI_VERSION = '1.1.4';
+	const ADI_VERSION = '1.1.5dev';
 	
 	// name of our own table
 	const TABLE_NAME = 'adintegration';
@@ -655,10 +655,16 @@ class ADIntegrationPlugin {
 								 'adLDAP ver.: '.adLDAP::VERSION."\n".
 								 '------------------------------------------');
 		
+		if (function_exists('ldap_control_paged_result')) {
+			$this->_log(ADI_LOG_INFO, 'LDAP paging: enabled');
+		} else {
+			$this->_log(ADI_LOG_INFO, 'LDAP paging: not available');
+		}
+		
 		// IMPORTANT!
 		$this->_authenticated = false;
 		$user_id = NULL;
-		$username = strtolower($username);
+		$username = strtolower($username); 
 		$password = stripslashes($password);
 
 		
@@ -824,7 +830,7 @@ class ADIntegrationPlugin {
 
 		// userinfo from AD
 		$this->_log(ADI_LOG_DEBUG, 'ATTRIBUTES TO LOAD: '.print_r($this->_all_user_attributes, true));
-		$userinfo = $this->_adldap->user_info($ad_username, $this->_all_user_attributes);
+		$userinfo = $this->_adldap->user_info($username, $this->_all_user_attributes); // Issue #0081 $username instead of $ad_username
 		$userinfo = $userinfo[0];
 		$this->_log(ADI_LOG_DEBUG,"USERINFO[0]: \n".print_r($userinfo,true));
 		
@@ -2130,7 +2136,7 @@ class ADIntegrationPlugin {
 					} else {
 						$parts[1] = strtolower(trim($parts[1]));
 					}
-					if (!in_array($parts[1], array('string','list','integer','bool','time','timestamp','octet'))) {
+					if (!in_array($parts[1], array('string','list','integer','bool','time','timestamp','octet','cn'))) {
 						$parts[1] = 'string';
 					}
 					$attributes[$attribute]['type'] = $parts[1];
@@ -2196,7 +2202,7 @@ class ADIntegrationPlugin {
 	/**
 	 * Returns formatted value according to attribute type
 	 * 
-	 * @param string $type (string, integer, bool, time, timestamp, octet)
+	 * @param string $type (string, integer, bool, time, timestamp, octet, cn)
 	 * @param mixed $value
 	 * @return mixed formatted value
 	 */
@@ -2218,6 +2224,25 @@ class ADIntegrationPlugin {
 				$timestamp = ($value / 10000000) - 11644473600 + get_option('gmt_offset',0) * 3600; 
 				return date_i18n(get_option('date_format','Y-m-d').' / '.get_option('time_format','H:i:s'), $timestamp, true);
 			case 'octet': return base64_encode($value);
+				
+			case 'cn': // Get CN from string
+				$pos = stripos($value,'cn=');
+				if ($pos !== false) {
+					$start =  $pos+3;
+					$foundEnd = false;
+					$valueLength = strlen($value);
+					for ($x = $start; $x < $valueLength; $x++) {
+						if ($value[$x] == ',') {
+							if ($value[$x-1] !== '\\') {
+								break;
+							}
+						}
+					}
+					return stripslashes(substr($value, $start, $x - $start));
+				} else {
+					return '';
+				}
+			
 		}
 		return $value;
 	}
@@ -2253,7 +2278,10 @@ class ADIntegrationPlugin {
 			if ( !empty( $arrPost['AD_Integration_auto_update_user'] ) )
 			 	update_site_option('AD_Integration_auto_update_user', (bool)$arrPost['AD_Integration_auto_update_user']);
 			
-			 	if ( !empty( $arrPost['AD_Integration_auto_update_description'] ) )
+			if ( !empty( $arrPost['AD_Integration_network_timeout'] ) )
+				update_site_option('AD_Integration_network_timeout', (int)$arrPost['AD_Integration_network_timeout']);
+			
+			if ( !empty( $arrPost['AD_Integration_auto_update_description'] ) )
 			 	update_site_option('AD_Integration_auto_update_description', (bool)$arrPost['AD_Integration_auto_update_description']);
 			 
 			if ( !empty( $arrPost['AD_Integration_account_suffix'] ) )
@@ -2387,7 +2415,7 @@ class ADIntegrationPlugin {
 		$this->_log(ADI_LOG_WARN,'storing failed login for user "'.$username.'"');
 		$table_name = ADIntegrationPlugin::global_db_prefix() . ADIntegrationPlugin::TABLE_NAME;
 		
-		$sql = "INSERT INTO $table_name (user_login, failed_login_time) VALUES ('" . $wpdb->escape($username)."'," . time() . ")";
+		$sql = $wpdb->prepare("INSERT INTO $table_name (user_login, failed_login_time) VALUES (%s, %d)", $username, time());
 		$result = $wpdb->query($sql);
 		
 	}
@@ -2405,7 +2433,7 @@ class ADIntegrationPlugin {
 		$table_name = ADIntegrationPlugin::global_db_prefix() . ADIntegrationPlugin::TABLE_NAME;
 		$time = time() - (int)$this->_block_time;
 		
-		$sql = "SELECT count(*) AS count from $table_name WHERE user_login = '".$wpdb->escape($username)."' AND failed_login_time >= $time";
+		$sql =  $wpdb->prepare("SELECT count(*) AS count from $table_name WHERE user_login = %s AND failed_login_time >= %d", $username, $time);
 		return $wpdb->get_var($sql);
 	}
 	
@@ -2424,9 +2452,10 @@ class ADIntegrationPlugin {
 		$table_name = ADIntegrationPlugin::global_db_prefix() . ADIntegrationPlugin::TABLE_NAME;
 		$time = time() - $this->_block_time;
 		
-		$sql = "DELETE FROM $table_name WHERE failed_login_time < $time";
 		if ($username != NULL) {
-			$sql .= " OR user_login = '".$wpdb->escape($username)."'"; 
+			$sql = $wpdb->prepare("DELETE FROM $table_name WHERE failed_login_time < %d OR user_login = %s", $time, $username);
+		} else {
+			$sql = $wpdb->prepare("DELETE FROM $table_name WHERE failed_login_time < %d", $time);
 		}
 		
 		$results = $wpdb->query($sql);
@@ -2444,7 +2473,7 @@ class ADIntegrationPlugin {
 		
 		$table_name = ADIntegrationPlugin::global_db_prefix() . ADIntegrationPlugin::TABLE_NAME;
 		
-		$sql = "SELECT max(failed_login_time) FROM $table_name WHERE user_login = '".$wpdb->escape($username)."'";
+		$sql = $wpdb->prepare("SELECT max(failed_login_time) FROM $table_name WHERE user_login = %s", $username);
 		$max_time = $wpdb->get_var($sql);
 		
 		if ($max_time == NULL ) {
